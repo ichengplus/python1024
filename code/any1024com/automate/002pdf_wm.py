@@ -1,4 +1,11 @@
+# coding=utf-8
 # 重新打开带水印文件，去水印
+"""
+测试PDF去水印
+
+Version: 0.0.1
+Author : yichu.cheng
+"""
 from pdf2image import convert_from_path
 from skimage import io
 import fitz

@@ -25,5 +25,19 @@ def file_rw():
         print(txt)
 
 
+def folder_iter():
+    """
+    列出当前文件夹下所有python代码文件
+
+    Version: 0.0.1
+    Author : yichu.cheng
+    """
+    path = pathlib.Path().cwd()
+    all_py_files = list(path.glob('**/*.py'))
+    for f in all_py_files:
+        print(f)
+
+
 if __name__ == '__main__':
     file_rw()
+    folder_iter()
