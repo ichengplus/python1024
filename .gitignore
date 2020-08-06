@@ -129,9 +129,10 @@ dmypy.json
 .pyre/
 
 # MacOS
-**/.DS_Store
+.DS_Store
 
 # chengyichu
 singlepage
 data
 book
+pretrained_models
