@@ -1,6 +1,10 @@
 '''
-需要提前安装好paddlehub的两个模型：
-* hub install stylepro_artistic
+人物重影视频
+在处理时，2个注意点：
+1. 最好找一些穿纯色衣服的视频，否则可能会出现人物空白点。
+2. 背景场地够宽，本例中在原人物左右分别复制了人物。
+
+需要提前安装好paddlehub的人像识别模型：
 * hub install deeplabv3p_xception65_humanseg
 
 Author: 程一初
@@ -9,109 +13,52 @@ Author: 程一初
 import pathlib
 import numpy as np
 import cv2
+from PIL import Image
 from moviepy.editor import VideoFileClip
 import paddlehub as hub
 
-# 风格
-# 1. 动漫：https://www.mscto.com/python/508576.html
-# 2. 跳舞：https://www.wwwbuild.net/Mouse_pro/10627.html，https://zhuanlan.zhihu.com/p/135276876
-# 3. 手指舞：https://aistudio.baidu.com/aistudio/projectdetail/518313
-# 4. 艺术风格（stylepro_artistic）：https://blog.csdn.net/intflojx/article/details/85616343
-
 path = pathlib.Path(
-    '~/dev/python/python1024/data/automate/008video').expanduser()
-flv_path = path.joinpath('lisa.flv')
-out_style_path = path.joinpath('008video_case_style.mp4')
-out_human_path = path.joinpath('008video_case_human.mp4')
-out_human_style_path = path.joinpath('008video_case_human_style.mp4')
-out_folder_path = path.joinpath('008video_case_style')
-style_path = path.joinpath('style2.jpg')
-
-styleart = hub.Module(name='stylepro_artistic')
+    '~/dev/python/python1024/data/automate/008video/008video_case_cp').expanduser()
+mp4_path = path.joinpath('K2.mp4')
 humanseg = hub.Module(name='deeplabv3p_xception65_humanseg')
-img_style = cv2.imread(str(style_path))
 
 
-def fl_style(im):
-    # 应用艺术风格，由于paddlehub内部采用cv2处理，需要先转为BGR模式
-    result = styleart.style_transfer(
-        images=[{
-            'content': cv2.cvtColor(im, cv2.COLOR_RGB2BGR),
-            'styles': [img_style]
-        }],
-        alpha=0.5
-    )
-    # 转换回RGB模式
-    return cv2.cvtColor(result[0]['data'], cv2.COLOR_BGR2RGB)
-
-
-def fl_human(im):
-    # 同样为BGR模式
-    result = humanseg.segmentation(images=[im])
-    img_hum = result[0]['data'].astype(np.uint8)  # 转单通道
-    # 去掉背景
-    image = cv2.add(im, np.zeros(np.shape(im), dtype=np.uint8), mask=img_hum)
-    # 返回RGB图像
-    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-
-def fl_human_style(im):
+def fl_alpha(im):
     frame = np.array(im)
-    # 先抠人像图，加黑底
-    result = humanseg.segmentation(images=[im])
+    img = Image.fromarray(frame)
+    img_cv2 = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    result = humanseg.segmentation(images=[img_cv2])
     img_hum = result[0]['data'].astype(np.uint8)
-    image = cv2.add(im, np.zeros(np.shape(im), dtype=np.uint8), mask=img_hum)
-    # 应用艺术风格
-    result = styleart.style_transfer(
-        images=[{
-            'content': image,
-            'styles': [img_style]
-        }],
-        alpha=0.5
-    )
-    return cv2.cvtColor(result[0]['data'], cv2.COLOR_BGR2RGB)
+    image = Image.fromarray(cv2.cvtColor(
+        img_hum, cv2.COLOR_BGR2RGBA)).convert('1')
+    image_human = img.copy()
+    image_human.putalpha(image)
+    img.paste(image_human, (img.size[0]//3, 0), mask=image_human)
+    img.paste(image_human, (-img.size[0]//3, 0), mask=image_human)
+    return np.array(img)
 
 
 if __name__ == "__main__":
-    clip = VideoFileClip(str(flv_path)).subclip(0, 10).set_fps(5).resize(0.5)
-    img_path = out_folder_path.joinpath('single.png')
-    clip.save_frame(img_path, 70)
-    # 人像抠图
-    img = cv2.imread(str(img_path))
-    result = humanseg.segmentation(images=[img])
+    clip = VideoFileClip(str(mp4_path)).subclip(0, 20).set_fps(5).resize(0.3)
+    img_path = path.joinpath('single.png')
+    clip.save_frame(img_path, 10)
+    img = Image.open(img_path)
+    # 转opencv数据格式BGR
+    img_cv2 = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    # 识别人像
+    result = humanseg.segmentation(images=[img_cv2])
     img_hum = result[0]['data'].astype(np.uint8)
-    image = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=img_hum)
-    cv2.imwrite(str(out_folder_path.joinpath(
-        '008video_case_human_only.png')), image)
+    image = Image.fromarray(cv2.cvtColor(
+        img_hum, cv2.COLOR_BGR2RGBA)).convert('1')
+    # 生成彩色人像
+    image_human = img.copy()
+    image_human.putalpha(image)
+    # 把彩色人像贴入原图，放在原图人物两边
+    img.paste(image_human, (img.size[0]//3, 0), mask=image_human)
+    img.paste(image_human, (-img.size[0]//3, 0), mask=image_human)
+    img.save(path.joinpath('008video_alpha.png'))
 
-    # 单独应用风格
-    result = styleart.style_transfer(
-        images=[{
-            'content': img,
-            'styles': [img_style]
-        }],
-        alpha=0.5
-    )
-    cv2.imwrite(str(out_folder_path.joinpath(
-        '008video_case_style_only.png')), result[0]['data'])
-
-    # 人物应用风格
-    result = styleart.style_transfer(
-        images=[{
-            'content': image,
-            'styles': [img_style]
-        }],
-        alpha=0.5
-    )
-    cv2.imwrite(str(out_folder_path.joinpath(
-        '008video_case_human_style.png')), result[0]['data'])
-
-    # 输出纯黑背景人物
-    clip_human = clip.fl_image(fl_human)
-    clip_human.write_videofile(str(out_style_path), audio_codec='aac')
-    # 直接加style
-    clip_style = clip.fl_image(fl_style)
-    clip_style.write_videofile(str(out_human_path), audio_codec='aac')
-    # 先抠图再应用Style
-    clip_hustyle = clip.fl_image(fl_human_style)
-    clip_hustyle.write_videofile(str(out_human_style_path), audio_codec='aac')
+    # 生成视频
+    clip_alpha = clip.fl_image(fl_alpha)
+    clip_alpha.write_videofile(
+        str(path.joinpath('008video_alpha.mp4')), audio_codec='aac')

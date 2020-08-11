@@ -130,6 +130,7 @@ dmypy.json
 
 # MacOS
 .DS_Store
+.vscode/
 
 # chengyichu
 singlepage
