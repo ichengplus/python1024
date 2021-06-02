@@ -188,7 +188,7 @@ tqdm==4.48.0
 traitlets==4.3.3
 typed-ast==1.4.1
 unicodecsv==0.14.1
-urllib3==1.25.10
+urllib3==1.26.5
 virtualenv==20.0.29
 visualdl==2.0.0b8
 Wand==0.6.2
