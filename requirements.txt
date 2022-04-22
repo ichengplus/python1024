@@ -139,7 +139,7 @@ Pygments==2.6.1
 pylint==2.5.3
 PyMuPDF==1.17.4
 pyparsing==2.4.7
-PyPDF2==1.26.0
+PyPDF2==1.27.5
 pypinyin==0.38.1
 pyrsistent==0.16.0
 pytesseract==0.3.4
