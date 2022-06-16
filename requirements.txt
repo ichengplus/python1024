@@ -93,7 +93,7 @@ networkx==2.4
 nltk==3.5
 nodeenv==1.4.0
 norbert==0.2.1
-notebook==6.0.3
+notebook==6.4.12
 numba==0.48.0
 numpy==1.19.1
 objgraph==3.4.1
