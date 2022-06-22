@@ -95,7 +95,7 @@ nodeenv==1.4.0
 norbert==0.2.1
 notebook==6.0.3
 numba==0.48.0
-numpy==1.19.1
+numpy==1.22.0
 objgraph==3.4.1
 opencv-python==4.3.0.36
 openpyxl==3.0.4
