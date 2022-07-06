@@ -79,7 +79,7 @@ kiwisolver==1.2.0
 lazy-object-proxy==1.4.3
 librosa==0.7.2
 llvmlite==0.31.0
-lxml==4.5.2
+lxml==4.9.1
 Markdown==3.2.2
 MarkupSafe==1.1.1
 matplotlib==3.3.0
