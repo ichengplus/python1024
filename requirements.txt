@@ -103,7 +103,7 @@ opt-einsum==3.3.0
 oss2==2.12.1
 packaging==20.4
 paddlehub==1.8.0
-paddlepaddle==1.8.3
+paddlepaddle==2.4.0
 pandas==0.25.1
 pandocfilters==1.4.2
 parso==0.7.1
